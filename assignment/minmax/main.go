@@ -5,6 +5,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -12,7 +13,10 @@ import (
 
 func getInput() string {
 	reader := bufio.NewReader(os.Stdin)
-	input, _ := reader.ReadString('\n')
+	input, err := reader.ReadString('\n')
+	if err != nil {
+		log.Fatal(err)
+	}
 	return strings.TrimSpace(input)
 }
 
@@ -28,12 +32,14 @@ func minMax(min, max float64, values ...float64) []float64 {
 }
 
 func main() {
-	fmt.Println("Enter minimum value:")
-	minValue := getInput()
-	min, err := strconv.ParseFloat(minValue, 64)
-	if err != nil {
-		fmt.Println("Invalid minimum value. Please enter a number.")
-		return
+	for {
+		fmt.Println("Enter minimum value:")
+		minValue := getInput()
+		min, err := strconv.ParseFloat(minValue, 64)
+		if err != nil {
+			fmt.Println("Invalid minimum value. Please enter a number.")
+			return
+		}
 	}
 
 	fmt.Println("Enter maximum value:")

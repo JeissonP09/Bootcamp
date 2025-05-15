@@ -32,14 +32,12 @@ func minMax(min, max float64, values ...float64) []float64 {
 }
 
 func main() {
-	for {
-		fmt.Println("Enter minimum value:")
-		minValue := getInput()
-		min, err := strconv.ParseFloat(minValue, 64)
-		if err != nil {
-			fmt.Println("Invalid minimum value. Please enter a number.")
-			return
-		}
+	fmt.Println("Enter minimum value:")
+	minValue := getInput()
+	min, err := strconv.ParseFloat(minValue, 64)
+	if err != nil {
+		fmt.Println("Invalid minimum value. Please enter a number.")
+		return
 	}
 
 	fmt.Println("Enter maximum value:")

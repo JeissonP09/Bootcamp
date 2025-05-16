@@ -34,7 +34,7 @@ func getValueInput(logDescription string) (valFlt float64, err error) {
 	fmt.Println(logDescription)
 	inputValue, err := getInput()
 	if err != nil {
-		return getValueInput("The number imput is invalid")
+		return
 	}
 	valFlt, err = strconv.ParseFloat(inputValue, 64)
 	if err != nil {
@@ -46,12 +46,12 @@ func getValueInput(logDescription string) (valFlt float64, err error) {
 func main() {
 	min, err := getValueInput("Enter the minimum value:")
 	if err != nil {
-		fmt.Println("The number imput is invalid")
+		fmt.Println("The number input is invalid")
 		return
 	}
 	max, err := getValueInput("Enter the maximum value:")
 	if err != nil {
-		fmt.Println("The number imput is invalid")
+		fmt.Println("The number input is invalid")
 		return
 	}
 

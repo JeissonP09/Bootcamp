@@ -5,19 +5,18 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
 )
 
-func getInput() string {
+func getInput() (string, error) {
 	reader := bufio.NewReader(os.Stdin)
 	input, err := reader.ReadString('\n')
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
-	return strings.TrimSpace(input)
+	return strings.TrimSpace(input), nil
 }
 
 func minMax(min, max float64, values ...float64) []float64 {
@@ -31,31 +30,44 @@ func minMax(min, max float64, values ...float64) []float64 {
 	return inRange
 }
 
-func main() {
-	fmt.Println("Enter minimum value:")
-	minValue := getInput()
-	min, err := strconv.ParseFloat(minValue, 64)
+func getValueInput(logDescription string) (valFlt float64, err error) {
+	fmt.Println(logDescription)
+	inputValue, err := getInput()
 	if err != nil {
-		fmt.Println("Invalid minimum value. Please enter a number.")
+		return getValueInput("The number imput is invalid")
+	}
+	valFlt, err = strconv.ParseFloat(inputValue, 64)
+	if err != nil {
+		return getValueInput(fmt.Sprintf("The value %s is invalid. Please enter other number:", inputValue))
+	}
+	return
+}
+
+func main() {
+	min, err := getValueInput("Enter the minimum value:")
+	if err != nil {
+		fmt.Println("The number imput is invalid")
 		return
 	}
-
-	fmt.Println("Enter maximum value:")
-	maxValue := getInput()
-	max, err := strconv.ParseFloat(maxValue, 64)
+	max, err := getValueInput("Enter the maximum value:")
 	if err != nil {
-		fmt.Println("Invalid maximum value. Please enter a number.")
+		fmt.Println("The number imput is invalid")
 		return
 	}
 
 	fmt.Println("The ranks are: ", min, "--", max)
 
-	var values []float64
+	values := make([]float64, 0)
 	attemps := 0
 
 	for attemps < 3 {
 		fmt.Println("Enter a list of values separated by spaces:")
-		input := getInput()
+		input, err := getInput()
+		if err != nil {
+			fmt.Println("Error reading input:", err)
+			attemps++
+			continue
+		}
 		inputValues := strings.Fields(input)
 		values = nil
 		valid := true

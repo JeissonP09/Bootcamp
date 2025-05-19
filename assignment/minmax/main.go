@@ -1,4 +1,6 @@
-/* Create a program that asks the user about a minimum value, a maximum value and a list of values. After that, filter out all the values that are out of range and print the values in range using a slice. */
+/* Create a program that asks the user about a minimum value,
+a maximum value and a list of values. After that,
+filter out all the values that are out of range and print the values in range using a slice. */
 
 package main
 
@@ -10,10 +12,13 @@ import (
 	"strings"
 )
 
-func getInput() string {
+func getInput() (string, error) {
 	reader := bufio.NewReader(os.Stdin)
-	input, _ := reader.ReadString('\n')
-	return strings.TrimSpace(input)
+	input, err := reader.ReadString('\n')
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(input), nil
 }
 
 func minMax(min, max float64, values ...float64) []float64 {
@@ -28,30 +33,43 @@ func minMax(min, max float64, values ...float64) []float64 {
 }
 
 func main() {
-	fmt.Println("Enter minimum value:")
-	minValue := getInput()
-	min, err := strconv.ParseFloat(minValue, 64)
+	fmt.Println("Enter the minium value:")
+	minStr, err := getInput()
 	if err != nil {
-		fmt.Println("Invalid minimum value. Please enter a number.")
+		fmt.Println("The number input is invalid")
+		return
+	}
+	min, err := strconv.ParseFloat(minStr, 64)
+	if err != nil {
+		fmt.Println("The number input is invalid")
 		return
 	}
 
-	fmt.Println("Enter maximum value:")
-	maxValue := getInput()
-	max, err := strconv.ParseFloat(maxValue, 64)
+	fmt.Println("Enter the maximum value:")
+	maxStr, err := getInput()
 	if err != nil {
-		fmt.Println("Invalid maximum value. Please enter a number.")
+		fmt.Println("The number input is invalid")
+		return
+	}
+	max, err := strconv.ParseFloat(maxStr, 64)
+	if err != nil {
+		fmt.Println("The number input is invalid")
 		return
 	}
 
 	fmt.Println("The ranks are: ", min, "--", max)
 
-	var values []float64
+	values := make([]float64, 0)
 	attemps := 0
 
 	for attemps < 3 {
 		fmt.Println("Enter a list of values separated by spaces:")
-		input := getInput()
+		input, err := getInput()
+		if err != nil {
+			fmt.Println("Error reading input:", err)
+			attemps++
+			continue
+		}
 		inputValues := strings.Fields(input)
 		values = nil
 		valid := true

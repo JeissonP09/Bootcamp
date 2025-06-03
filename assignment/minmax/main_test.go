@@ -2,65 +2,74 @@ package main
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestMinMax(t *testing.T) {
-
-	testCases := []struct {
-		Name   string
-		Min    float64
-		Max    float64
-		Values []float64
-		Result []float64
+	cases := []struct {
+		name     string
+		min, max float64
+		values   []float64
+		expected []float64
 	}{
 		{
-			Name:   "¿Qué debería pasar si pasa correctamente un min, un máximo y un conjunto de valores?",
-			Min:    6,
-			Max:    12,
-			Values: []float64{52, 8, 10, 1, 30, 54},
-			Result: []float64{8, 10},
+			name:     "1. what should happen if you correctly pass a min, a max and a set of values?",
+			min:      2,
+			max:      65,
+			values:   []float64{7, 69, 45, 25, 1},
+			expected: []float64{7, 45, 25},
 		},
 		{
-			Name:   "¿Qué debería pasar si solo pasas un min, un máximo y un solo valor?",
-			Min:    3,
-			Max:    65,
-			Values: []float64{9},
-			Result: []float64{9},
+			name:     "2. What should happen if the you just pass a min, a max and a single value?",
+			min:      2,
+			max:      65,
+			values:   []float64{7},
+			expected: []float64{7},
 		},
 		{
-			Name:   "¿Qué debería suceder si el valor pasado como min es realmente mayor que max?",
-			Min:    8,
-			Max:    2,
-			Values: []float64{1, 4, 9},
-			Result: nil,
+			name:     "3. What should happen if the value passed as min is actually greater than max?",
+			min:      8,
+			max:      2,
+			values:   []float64{3, 6, 12},
+			expected: []float64{},
 		},
 		{
-			Name:   "¿Qué debería suceder si no se pasa un solo valor dentro del rango?",
-			Min:    3,
-			Max:    15,
-			Values: []float64{},
-			Result: nil,
+			name:     "4. What should happen if not a single value passed is within the range?",
+			min:      2,
+			max:      65,
+			values:   []float64{1, 99, 999},
+			expected: []float64{},
 		},
 		{
-			Name:   "¿Qué debería pasar si min y max son negativos?",
-			Min:    -2,
-			Max:    -10,
-			Values: []float64{1, 68, 58, 5},
-			Result: nil,
+			name:     "5. What should happen if both min and max are negative?",
+			min:      -8,
+			max:      -150,
+			values:   []float64{8, 9, 87},
+			expected: []float64{},
 		},
 		{
-			Name:   "¿Qué debería pasar si min y max son iguales?",
-			Min:    7,
-			Max:    7,
-			Values: []float64{8, 2, 87, 6},
-			Result: nil,
+			name:     "6. What should happen if both min and max are equal?",
+			min:      9,
+			max:      9,
+			values:   []float64{2, 658, 25},
+			expected: []float64{},
 		},
 	}
 
-	for _, testCase := range testCases {
-		result := minMax(testCase.Min, testCase.Max, testCase.Values...)
-		assert.Equal(t, testCase.Result, result)
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			result := minMax(c.min, c.max, c.values...)
+
+			if len(result) != len(c.expected) {
+				t.Errorf("fail [%s]: Expected %v, but it was obtained %v, range: [%.f, %.f]", c.name, c.expected, result, c.min, c.max)
+				return
+			}
+
+			for i := range result {
+				if result[i] != c.expected[i] {
+					t.Errorf("fail [%s]: expected %v in position %d of slice, but obtained %v. Filter values: [%.f y %.f]", c.name, c.expected[i], i, result[i], c.min, c.max)
+				}
+			}
+		})
 	}
+
 }

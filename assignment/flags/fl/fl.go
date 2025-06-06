@@ -13,7 +13,7 @@ func Parse() {
 	args := os.Args[1:]
 	// Evaluate if the defined flags should change their default value
 	for _, arg := range args {
-		if flag, exits := flags[arg]; exits {
+		if flag, ok := flags[arg]; ok {
 			flag.value = true
 		}
 	}
@@ -22,8 +22,8 @@ func Parse() {
 func Bool(cmd string, value bool, description string) *bool {
 	// Add logic to create boolean flags
 	flag := &Flag{
-		value:       value,
-		description: description,
+		value,
+		description,
 	}
 	flags[cmd] = flag
 	return &flag.value

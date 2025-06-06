@@ -7,45 +7,48 @@ import (
 	"strings"
 )
 
-func main() {
-	scanner := bufio.NewScanner(os.Stdin)
+func getInput() string {
 	fmt.Println("Enter text line by line. Type 'exit' to finish.")
+	fmt.Print(">")
+	scanner := bufio.NewScanner(os.Stdin)
+	var lines []string
 
-	wordCount := 0
-	lineCount := 0
-
-	countLines := len(os.Args) > 1 && os.Args[1] == "-l"
-
-	for {
-		fmt.Print("> ")
-		scanner.Scan()
+	for scanner.Scan() {
 		line := scanner.Text()
-
-		if line == "exit" {
+		if strings.TrimSpace(line) == "exit" {
 			break
 		}
 
-		if countLines {
-			lineCount++
-		} else {
-			words := strings.Fields(line)
-			for _, word := range words {
-				if word != "exit" {
-					wordCount++
-				}
-			}
-		}
-
+		lines = append(lines, line)
 	}
+
+	return strings.Join(lines, "\n")
+}
+
+func counter(text string, lines bool) int {
+	if text == "" {
+		return 0
+	}
+
+	if lines {
+		return len(strings.Split(text, "\n"))
+	}
+	return len(strings.Fields(text))
+}
+
+func main() {
+	text := getInput()
+	countLines := false
+
+	if len(os.Args) > 1 && os.Args[1] == "-l" {
+		countLines = true
+	}
+
+	result := counter(text, countLines)
 
 	if countLines {
-		fmt.Println("Number of lines entered:", lineCount)
+		fmt.Println("Number of lines: ", result)
 	} else {
-		fmt.Println("Number of words entered:", wordCount)
+		fmt.Println("Number of words: ", result)
 	}
-
-	if err := scanner.Err(); err != nil {
-		fmt.Println("Error reading entry:", err)
-	}
-
 }

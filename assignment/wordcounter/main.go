@@ -25,30 +25,30 @@ func getInput() string {
 	return strings.Join(lines, "\n")
 }
 
-func wordCounter(text string) int {
-	return len(strings.Fields(text))
-}
-
-func lineCounter(text string) int {
+func counter(text string, lines bool) int {
 	if text == "" {
 		return 0
 	}
-	return len(strings.Split(text, "\n"))
+
+	if lines {
+		return len(strings.Split(text, "\n"))
+	}
+	return len(strings.Fields(text))
 }
 
 func main() {
-	mod := "words"
+	text := getInput()
+	countLines := false
 
 	if len(os.Args) > 1 && os.Args[1] == "-l" {
-		mod = "lines"
+		countLines = true
 	}
 
-	text := getInput()
+	result := counter(text, countLines)
 
-	switch mod {
-	case "lines":
-		fmt.Println("Number of lines: ", lineCounter(text))
-	default:
-		fmt.Println("Number of words: ", wordCounter(text))
+	if countLines {
+		fmt.Println("Number of lines: ", result)
+	} else {
+		fmt.Println("Number of words: ", result)
 	}
 }

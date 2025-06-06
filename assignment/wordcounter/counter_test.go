@@ -19,7 +19,7 @@ func TestWordCounter(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		result := wordCounter(c.text)
+		result := counter(c.text, false)
 		if result != c.expected {
 			t.Errorf("Fail: %s: Expected [%d], but result obtained: [%d]", c.name, c.expected, result)
 		}
@@ -38,7 +38,7 @@ func TestLineCounter(t *testing.T) {
 			text: `one line
 			second line
 			three line`,
-			expected: 0,
+			expected: 3,
 		},
 		{"3. When the user types multiple lines with one or more break lines in between lines.", "one line\n\n test\n\n line", 5},
 		{"Exit at the beginning of the line", "Exit line of test", 1},
@@ -47,7 +47,7 @@ func TestLineCounter(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		result := lineCounter(c.text)
+		result := counter(c.text, true)
 		if result != c.expected {
 			t.Errorf("Fail: %s: Expected [%d], but result obtained: [%d]", c.name, c.expected, result)
 		}

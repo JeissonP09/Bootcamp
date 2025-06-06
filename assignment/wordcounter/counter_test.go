@@ -19,7 +19,7 @@ func TestWordCounter(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		result := counter(c.text, false)
+		result := counter(c.text, false, false)
 		if result != c.expected {
 			t.Errorf("Fail: %s: Expected [%d], but result obtained: [%d]", c.name, c.expected, result)
 		}
@@ -47,7 +47,34 @@ func TestLineCounter(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		result := counter(c.text, true)
+		result := counter(c.text, true, true)
+		if result != c.expected {
+			t.Errorf("Fail: %s: Expected [%d], but result obtained: [%d]", c.name, c.expected, result)
+		}
+	}
+}
+
+func TestByteCounter(t *testing.T) {
+	cases := []struct {
+		name     string
+		text     string
+		expected int
+	}{
+		{"1. Enter a single line with multiple words", "count bytes test", 16},
+		{"2. enter words with line breaks", "count bytes\ntest\nother line", 27},
+		{
+			name: "3. When the user types multiple lines without a break line in between lines.",
+			text: `one line
+			second line`,
+			expected: 23,
+		},
+		{"Exit at the beginning of the line", "Exit line of test", 17},
+		{"exit in the middle of the line", "line exit test", 14},
+		{"EXIT at the end of the line", "line test EXIT", 14},
+	}
+
+	for _, c := range cases {
+		result := counter(c.text, false, true)
 		if result != c.expected {
 			t.Errorf("Fail: %s: Expected [%d], but result obtained: [%d]", c.name, c.expected, result)
 		}

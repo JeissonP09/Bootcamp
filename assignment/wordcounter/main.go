@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"os"
 	"strings"
@@ -25,30 +26,35 @@ func getInput() string {
 	return strings.Join(lines, "\n")
 }
 
-func counter(text string, lines bool) int {
+func counter(text string, countLines, countBytes bool) int {
 	if text == "" {
 		return 0
 	}
 
-	if lines {
+	switch {
+	case countLines:
 		return len(strings.Split(text, "\n"))
+	case countBytes:
+		return len([]byte(text))
+	default:
+		return len(strings.Fields(text))
 	}
-	return len(strings.Fields(text))
 }
 
 func main() {
+	countLines := flag.Bool("l", false, "count lines")
+	countBytes := flag.Bool("b", false, "count bytes")
+	flag.Parse()
+
 	text := getInput()
-	countLines := false
 
-	if len(os.Args) > 1 && os.Args[1] == "-l" {
-		countLines = true
-	}
+	result := counter(text, *countLines, *countBytes)
 
-	result := counter(text, countLines)
-
-	if countLines {
-		fmt.Println("Number of lines: ", result)
+	if *countLines {
+		fmt.Println("Number of lines:", result)
+	} else if *countBytes {
+		fmt.Println("Number of bytes:", result)
 	} else {
-		fmt.Println("Number of words: ", result)
+		fmt.Println("Number of words:", result)
 	}
 }

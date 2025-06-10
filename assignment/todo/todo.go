@@ -12,30 +12,28 @@ type item struct {
 	CompletedAt time.Time
 }
 
-type List struct {
-	items []item
-}
+type List []item
 
 func (l *List) Add(title string) {
-	newItem := item{Task: title, Done: false}
-	l.items = append(l.items, newItem)
+	newItem := item{Task: title, Done: false, CreatedAt: time.Now()}
+	*l = append(*l, newItem)
 }
 
 func (l *List) Complete(index int) error {
-	if index < 0 || index >= len(l.items) {
+	if index < 0 || index >= len(*l) {
 		return fmt.Errorf("invalid index")
 	}
-	l.items[index].Done = true
-	l.items[index].CompletedAt = time.Now()
+	(*l)[index].Done = true
+	(*l)[index].CompletedAt = time.Now()
 
 	return nil
 }
 
 func (l *List) Delete(index int) error {
-	if index < 0 || index >= len(l.items) {
+	if index < 0 || index >= len(*l) {
 		return fmt.Errorf("invalid index")
 	}
-	l.items = append(l.items[:index], l.items[index+1:]...)
+	*l = append((*l)[:index], (*l)[index+1:]...)
 
 	return nil
 }

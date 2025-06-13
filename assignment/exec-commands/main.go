@@ -1,8 +1,8 @@
 package main
 
 import (
+	"fmt"
 	"log"
-	"os"
 	"os/exec"
 	"runtime"
 )
@@ -13,10 +13,9 @@ func main() {
 		cmd = exec.Command("tasklist")
 	}
 
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err := cmd.Run()
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Fatalf("cmd.Run() failed with %s\n", err)
 	}
+	fmt.Printf("combined out: \n%s\n", string(out))
 }

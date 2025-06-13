@@ -2,19 +2,25 @@ package main
 
 import (
 	"bytes"
-	"errors"
+	"fmt"
+	"log"
+	"os/exec"
+	"runtime"
 )
 
-func (c *Cmd) CombinedOutput() ([]byte, error) {
-	if c.Stdout != nil {
-		return nil, errors.New("exec: Stdout already set")
+func main() {
+	cmd := exec.Command("ls", "-lah")
+	if runtime.GOOS == "windows" {
+		cmd = exec.Command("tasklist")
 	}
-	if c.Stderr != nil {
-		return nil, errors.New("exec: Stderr already set")
+
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	if err != nil {
+		log.Fatalf("cmd.Run() failed with %s\n", err)
 	}
-	var b bytes.Buffer
-	c.Stdout = &b
-	c.stderr = &b
-	err := c.Run()
-	return b.Bytes(), err
+	outStr, errStr := string(stdout.Bytes()), string(stderr.Bytes())
+	fmt.Printf("out: \n%s\nerr:\n%s\n", outStr, errStr)
 }

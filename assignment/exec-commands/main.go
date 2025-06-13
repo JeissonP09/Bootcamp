@@ -1,21 +1,20 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"os/exec"
-	"runtime"
+	"bytes"
+	"errors"
 )
 
-func main() {
-	cmd := exec.Command("ls", "-lah")
-	if runtime.GOOS == "windows" {
-		cmd = exec.Command("tasklist")
+func (c *Cmd) CombinedOutput() ([]byte, error) {
+	if c.Stdout != nil {
+		return nil, errors.New("exec: Stdout already set")
 	}
-
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Fatalf("cmd.Run() failed with %s\n", err)
+	if c.Stderr != nil {
+		return nil, errors.New("exec: Stderr already set")
 	}
-	fmt.Printf("combined out: \n%s\n", string(out))
+	var b bytes.Buffer
+	c.Stdout = &b
+	c.stderr = &b
+	err := c.Run()
+	return b.Bytes(), err
 }

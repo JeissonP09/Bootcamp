@@ -76,12 +76,12 @@ func TestSaveAndGet(t *testing.T) {
 	}
 
 	if len(l2) != len(l1) {
-		t.Fatalf("Task was expected [%d], but obtained [%d]", len(l1), len(l2))
+		t.Errorf("Task was expected [%d], but obtained [%d]", len(l1), len(l2))
 	}
 
 	for i := range l1 {
 		if l1[i].Task != l2[i].Task {
-			t.Errorf("Task [%d]: expected %q, but obtained %q", i+1, l1[i].Task, l2[i].Task)
+			t.Errorf("Task [%d]: expected %q, but obtained %q", i, l1[i].Task, l2[i].Task)
 		}
 	}
 }

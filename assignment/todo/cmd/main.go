@@ -8,10 +8,7 @@ import (
 	"todo"
 )
 
-const (
-	fileName = ".todo.json"
-	NoAction = -1
-)
+const fileName = ".todo.json"
 
 func main() {
 	add := flag.Bool("add", false, "Add a new task")
@@ -29,33 +26,49 @@ func main() {
 
 	args := flag.Args()
 
-	if *add || (len(args) > 0 && *complete == NoAction && *delete == NoAction) {
+	if *add || (len(args) > 0 && *complete == -1 && *delete == -1) {
 		task := strings.Join(args, " ")
 		if task == "" {
 			fmt.Fprintf(os.Stderr, "Task cannot be empty")
 			os.Exit(1)
 		}
 		list.Add(task)
-	} else if *complete >= 0 {
+		if err := list.Save(fileName); err != nil {
+			fmt.Fprintf(os.Stderr, "Error saving ToDo list: %v\n", err)
+			os.Exit(1)
+		}
+		return
+
+	}
+
+	if *complete >= 0 {
 		err := list.Complete(*complete - 1)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error completing task: %v\n", err)
 			os.Exit(1)
 		}
-	} else if *delete >= 0 {
+		if err := list.Save(fileName); err != nil {
+			fmt.Fprintf(os.Stderr, "Error saving ToDo list: %v\n", err)
+			os.Exit(1)
+		}
+		return
+
+	}
+
+	if *delete >= 0 {
 		err := list.Delete(*delete - 1)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error deleting task: %v\n", err)
 			os.Exit(1)
 		}
-	} else {
-		for _, item := range list {
-			fmt.Println(item.Task)
+		if err := list.Save(fileName); err != nil {
+			fmt.Fprintf(os.Stderr, "Error saving ToDo list: %v\n", err)
+			os.Exit(1)
 		}
+		return
 	}
 
-	if err := list.Save(fileName); err != nil {
-		fmt.Fprintf(os.Stderr, "Error saving ToDo list: %v\n", err)
-		os.Exit(1)
+	for _, item := range list {
+		fmt.Println(item.Task)
 	}
 }

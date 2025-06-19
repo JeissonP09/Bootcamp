@@ -14,7 +14,6 @@ func main() {
 	add := flag.Bool("add", false, "Add a new task")
 	complete := flag.Int("complete", -1, "Complete a task")
 	delete := flag.Int("delete", -1, "Delete a task")
-
 	flag.Parse()
 
 	var list todo.List
@@ -26,24 +25,8 @@ func main() {
 
 	args := flag.Args()
 
-	if *add || (len(args) > 0 && *complete == -1 && *delete == -1) {
-		task := strings.Join(args, " ")
-		if task == "" {
-			fmt.Fprintf(os.Stderr, "Task cannot be empty")
-			os.Exit(1)
-		}
-		list.Add(task)
-		if err := list.Save(fileName); err != nil {
-			fmt.Fprintf(os.Stderr, "Error saving ToDo list: %v\n", err)
-			os.Exit(1)
-		}
-		return
-
-	}
-
 	if *complete >= 0 {
-		err := list.Complete(*complete - 1)
-		if err != nil {
+		if err := list.Complete(*complete - 1); err != nil {
 			fmt.Fprintf(os.Stderr, "Error completing task: %v\n", err)
 			os.Exit(1)
 		}
@@ -56,8 +39,7 @@ func main() {
 	}
 
 	if *delete >= 0 {
-		err := list.Delete(*delete - 1)
-		if err != nil {
+		if err := list.Delete(*delete - 1); err != nil {
 			fmt.Fprintf(os.Stderr, "Error deleting task: %v\n", err)
 			os.Exit(1)
 		}
@@ -66,6 +48,21 @@ func main() {
 			os.Exit(1)
 		}
 		return
+	}
+
+	if *add {
+		task := strings.Join(args, " ")
+		if task == "" {
+			fmt.Fprintf(os.Stderr, "Task cannot be empty")
+			os.Exit(1)
+		}
+		list.Add(task)
+		if err := list.Save(fileName); err != nil {
+			fmt.Fprintf(os.Stderr, "Error saving ToDo list: %v\n", err)
+			os.Exit(1)
+		}
+		return
+
 	}
 
 	for _, item := range list {

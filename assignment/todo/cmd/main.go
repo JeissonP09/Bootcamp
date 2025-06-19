@@ -1,0 +1,71 @@
+package main
+
+import (
+	"flag"
+	"fmt"
+	"os"
+	"strings"
+	"todo"
+)
+
+const fileName = ".todo.json"
+
+func main() {
+	add := flag.Bool("add", false, "Add a new task")
+	complete := flag.Int("complete", -1, "Complete a task")
+	delete := flag.Int("delete", -1, "Delete a task")
+	flag.Parse()
+
+	var list todo.List
+
+	if err := list.Get(fileName); err != nil {
+		fmt.Fprintf(os.Stderr, "Error getting tasks: %v\n", err)
+		os.Exit(1)
+	}
+
+	args := flag.Args()
+
+	if *complete >= 0 {
+		if err := list.Complete(*complete - 1); err != nil {
+			fmt.Fprintf(os.Stderr, "Error completing task: %v\n", err)
+			os.Exit(1)
+		}
+		if err := list.Save(fileName); err != nil {
+			fmt.Fprintf(os.Stderr, "Error saving ToDo list: %v\n", err)
+			os.Exit(1)
+		}
+		return
+
+	}
+
+	if *delete >= 0 {
+		if err := list.Delete(*delete - 1); err != nil {
+			fmt.Fprintf(os.Stderr, "Error deleting task: %v\n", err)
+			os.Exit(1)
+		}
+		if err := list.Save(fileName); err != nil {
+			fmt.Fprintf(os.Stderr, "Error saving ToDo list: %v\n", err)
+			os.Exit(1)
+		}
+		return
+	}
+
+	if *add {
+		task := strings.Join(args, " ")
+		if task == "" {
+			fmt.Fprintf(os.Stderr, "Task cannot be empty")
+			os.Exit(1)
+		}
+		list.Add(task)
+		if err := list.Save(fileName); err != nil {
+			fmt.Fprintf(os.Stderr, "Error saving ToDo list: %v\n", err)
+			os.Exit(1)
+		}
+		return
+
+	}
+
+	for _, item := range list {
+		fmt.Println(item.Task)
+	}
+}

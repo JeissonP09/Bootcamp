@@ -29,9 +29,8 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 
-	err = os.WriteFile(fileName, []byte{}, 0644)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Cannot create file %s", fileName)
+	if err = os.WriteFile(fileName, []byte{}, 0644); err != nil {
+		fmt.Fprintf(os.Stderr, "Cannot create file %s: %v\n", fileName, err)
 		os.Exit(1)
 	}
 
@@ -46,7 +45,6 @@ func TestMain(m *testing.M) {
 }
 
 func TestTodoCLI(t *testing.T) {
-	task := "New Task"
 
 	dir, err := os.Getwd()
 	if err != nil {
@@ -56,26 +54,79 @@ func TestTodoCLI(t *testing.T) {
 	cmdPath := filepath.Join(dir, binName)
 
 	t.Run("AddNewTask", func(t *testing.T) {
-		cmd := exec.Command(cmdPath, strings.Split(task, " ")...)
-		fmt.Println(cmd)
-		err := cmd.Run()
-		if err != nil {
+		if err := os.WriteFile(fileName, []byte{}, 0644); err != nil {
 			t.Fatal(err)
+		}
+		task := "New Task"
+		cmd := exec.Command(cmdPath, "-task", task)
+		if err := cmd.Run(); err != nil {
+			t.Fatalf("Error add task: %v", err)
 		}
 	})
 
 	t.Run("ListTasks", func(t *testing.T) {
-		cmd := exec.Command(cmdPath)
-		fmt.Println(cmd)
-		out, err := cmd.CombinedOutput()
-		if err != nil {
+		if err := os.WriteFile(fileName, []byte{}, 0644); err != nil {
 			t.Fatal(err)
 		}
+		task := "New Task"
+		cmdAdd := exec.Command(cmdPath, "-task", task)
+		if err := cmdAdd.Run(); err != nil {
+			t.Fatalf("Error add task: %v", err)
+		}
+		cmdList := exec.Command(cmdPath, "-list")
+		out, err := cmdList.CombinedOutput()
+		if err != nil {
+			t.Fatalf("Error listing tasks: %v", err)
+		}
+		output := string(out)
+		if !strings.Contains(output, "Title: "+task) || !strings.Contains(output, "Done: false") {
+			t.Errorf("List output unexpected: %s", output)
+		}
+	})
 
-		expected := task + "\n"
+	t.Run("CompleteTask", func(t *testing.T) {
+		if err := os.WriteFile(fileName, []byte{}, 0644); err != nil {
+			t.Fatal(err)
+		}
+		task := "New Task"
+		cmdAdd := exec.Command(cmdPath, "-task", task)
+		if err := cmdAdd.Run(); err != nil {
+			t.Fatalf("Eror add task: %v", err)
+		}
+		cmdComplete := exec.Command(cmdPath, "-complete", "1")
+		if err := cmdComplete.Run(); err != nil {
+			t.Fatalf("Error completing task: %v", err)
+		}
+		cmdList := exec.Command(cmdPath, "-list")
+		out, err := cmdList.CombinedOutput()
+		if err != nil {
+			t.Fatalf("Error listing taks: %v", err)
+		}
+		if len(strings.TrimSpace(string(out))) != 0 {
+			t.Errorf("Expected no taks after completing, but got: %s", string(out))
+		}
+	})
 
-		if expected != string(out) {
-			t.Errorf("expected %s, got %s instead", expected, string(out))
+	t.Run("DeleteTask", func(t *testing.T) {
+		if err := os.WriteFile(fileName, []byte{}, 0644); err != nil {
+			t.Fatal(err)
+		}
+		task := "New Task"
+		cmdAdd := exec.Command(cmdPath, "-task", task)
+		if err := cmdAdd.Run(); err != nil {
+			t.Fatalf("Error add taks: %v", err)
+		}
+		cmdDelete := exec.Command(cmdPath, "-delete", "1")
+		if err := cmdDelete.Run(); err != nil {
+			t.Fatalf("Error deleting task: %v", err)
+		}
+		cmdList := exec.Command(cmdPath, "-list")
+		out, err := cmdList.CombinedOutput()
+		if err != nil {
+			t.Fatalf("Error lsiting taks: %v", err)
+		}
+		if len(strings.TrimSpace(string(out))) != 0 {
+			t.Errorf("Expected no taks deletion, but got: %s", string(out))
 		}
 	})
 }

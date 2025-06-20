@@ -57,16 +57,13 @@ func main() {
 	}
 
 	if *task != "" {
-		if *task == "" {
-			fmt.Fprintf(os.Stderr, "Task cannot be empty")
-			os.Exit(1)
-		}
-		l.Add(*task)
-		if err := l.Save(fileName); err != nil {
-			fmt.Fprintf(os.Stderr, "Error saving ToDo list: %v\n", err)
-			os.Exit(1)
-		}
-		return
+		fmt.Fprintf(os.Stderr, "Task cannot be empty")
+		os.Exit(1)
+	}
+	l.Add(*task)
+	if err := l.Save(fileName); err != nil {
+		fmt.Fprintf(os.Stderr, "Error saving ToDo list: %v\n", err)
+		os.Exit(1)
 	}
 
 	fmt.Fprintf(os.Stderr, "You must provide a valid command")

@@ -7,9 +7,14 @@ import (
 	"todo"
 )
 
-const fileName = ".todo.json"
+var fileName string
 
 func main() {
+	fileName = ".todo.json"
+	if env := os.Getenv("TODO_FILENAME"); env != "" {
+		fileName = env
+	}
+
 	list := flag.Bool("list", false, "List incomplete tasks")
 	task := flag.String("task", "", "Add a new task")
 	complete := flag.Int("complete", -1, "Complete a task")
@@ -24,11 +29,7 @@ func main() {
 	}
 
 	if *list {
-		for _, item := range l {
-			if !item.Done {
-				fmt.Printf("Title: %s, Done: %t, CreatedAt: %s, CompletedAt: %s", item.Task, item.Done, item.CreatedAt, item.CompletedAt)
-			}
-		}
+		fmt.Print(l)
 		return
 	}
 
@@ -56,7 +57,7 @@ func main() {
 		return
 	}
 
-	if *task != "" {
+	if *task == "" {
 		fmt.Fprintf(os.Stderr, "Task cannot be empty")
 		os.Exit(1)
 	}
@@ -65,7 +66,4 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error saving ToDo list: %v\n", err)
 		os.Exit(1)
 	}
-
-	fmt.Fprintf(os.Stderr, "You must provide a valid command")
-	os.Exit(1)
 }

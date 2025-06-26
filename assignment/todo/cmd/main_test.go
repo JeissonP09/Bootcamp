@@ -79,8 +79,9 @@ func TestTodoCLI(t *testing.T) {
 			t.Fatalf("Error listing tasks: %v", err)
 		}
 		output := string(out)
-		if !strings.Contains(output, "Title: "+task) || !strings.Contains(output, "Done: false") {
-			t.Errorf("List output unexpected: %s", output)
+		want := fmt.Sprintf("Incomplete task: - [ ] 0: %s\n", task)
+		if output != want {
+			t.Errorf("List output unexpected: \ngot: %q\nwant: %q", output, want)
 		}
 	})
 
@@ -102,8 +103,10 @@ func TestTodoCLI(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Error listing taks: %v", err)
 		}
-		if len(strings.TrimSpace(string(out))) != 0 {
-			t.Errorf("Expected no taks after completing, but got: %s", string(out))
+		output := string(out)
+		want := fmt.Sprintf("Complete task: - [X] 0: %s\n", task)
+		if output != want {
+			t.Errorf("List output unexpected: \ngot: %q\nwant: %q", output, want)
 		}
 	})
 

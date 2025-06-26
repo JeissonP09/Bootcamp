@@ -85,3 +85,18 @@ func TestSaveAndGet(t *testing.T) {
 		}
 	}
 }
+
+func TestString(t *testing.T) {
+	var l List
+	l.Add("New Task")
+	l.Add("Done Task")
+	if err := l.Complete(1); err != nil {
+		t.Fatalf("Complete failed: %v", err)
+	}
+
+	want := "" + "Incomplete task: - [ ] 0: New Task\n" + "Complete task: - [X] 1: Done Task\n"
+	got := l.String()
+	if got != want {
+		t.Errorf("String() =\n%q\nwant:\n%q", got, want)
+	}
+}

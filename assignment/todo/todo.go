@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -15,6 +16,20 @@ type item struct {
 }
 
 type List []item
+
+func (l *List) String() string {
+	var b strings.Builder
+	for i, it := range *l {
+		status := " "
+		prefix := "Incomplete task: "
+		if it.Done {
+			status = "X"
+			prefix = "Complete task: "
+		}
+		fmt.Fprintf(&b, "%s- [%s] %d: %s\n", prefix, status, i, it.Task)
+	}
+	return b.String()
+}
 
 func (l *List) Add(title string) {
 	newItem := item{Task: title, Done: false, CreatedAt: time.Now()}
@@ -55,13 +70,15 @@ func (l *List) Save(filename string) error {
 func (l *List) Get(filename string) error {
 	data, err := os.ReadFile(filename)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
 		return err
 	}
 	if len(data) == 0 {
 		return nil
 	}
-	err = json.Unmarshal(data, l)
-	if err != nil {
+	if err = json.Unmarshal(data, l); err != nil {
 		return err
 	}
 	return nil

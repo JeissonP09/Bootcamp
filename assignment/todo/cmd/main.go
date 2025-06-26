@@ -29,7 +29,7 @@ func main() {
 	}
 
 	if *list {
-		fmt.Print(l)
+		fmt.Print(&l)
 		return
 	}
 

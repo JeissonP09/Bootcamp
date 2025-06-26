@@ -17,9 +17,9 @@ type item struct {
 
 type List []item
 
-func (l List) String() string {
+func (l *List) String() string {
 	var b strings.Builder
-	for i, it := range l {
+	for i, it := range *l {
 		status := " "
 		prefix := "Incomplete task: "
 		if it.Done {

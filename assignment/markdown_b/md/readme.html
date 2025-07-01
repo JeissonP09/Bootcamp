@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+  <html>
+    <head>
+      <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+      <title>Markdown Preview Tool</title>
+    </head>
+    <body>
+<h1>Markdown to Safe HTML Converter
+</h1>
+
+<p>
+This Go project converts Markdown files into safe, sanitized HTML using the <code>blackfriday</code> and <code>bluemonday</code> libraries.
+
+—
+
+</p>
+
+<h2>🚀 What does this program do?
+</h2>
+
+<p>
+It reads a <code>.md</code> (Markdown) file, converts it to HTML, and then sanitizes the HTML content to remove any potentially harmful code (such as JavaScript injections), ensuring it’s safe to display in a browser.
+
+—
+
+</p>
+
+<h2>🧩 Technologies Used
+</h2>
+
+<p>
+- <a href="https://github.com/russross/blackfriday" rel="nofollow"><code>blackfriday/v2</code></a> – Parses Markdown content into raw HTML.
+- <a href="https://github.com/microcosm-cc/bluemonday" rel="nofollow"><code>bluemonday</code></a> – Sanitizes the HTML output to prevent XSS and other security vulnerabilities.
+- Standard Go packages: <code>os</code>, <code>fmt</code>, <code>io/ioutil</code>.
+
+—
+
+</p>
+
+<h2>📌 Core Function: <code>parseContent</code>
+</h2>
+
+<p>
+“`go
+func parseContent(input []byte) []byte {
+    unsafe := blackfriday.Run(input)
+    safe := bluemonday.UGCPolicy().SanitizeBytes(unsafe)
+    return safe
+}</p>
+
+    </body>
+  </html>

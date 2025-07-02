@@ -39,38 +39,22 @@ func TestRun(t *testing.T) {
 }
 
 func TestParseContent(t *testing.T) {
-	md := []byte(`# Test Markdown File
+	mdPath := filepath.Join("testdata", "model.md")
+	htmlPath := filepath.Join("testdata", "model.html")
 
-Just a test
-
-## Bullets
-
-- Links [Link1](https://example.com)
-
-## Quotes
-
-> Quotes in **bold** and _italic_ text
-`)
+	md, err := os.ReadFile(mdPath)
+	if err != nil {
+		t.Fatalf("reading Markdown: %v", err)
+	}
 
 	got := parseContent(md)
-	if len(got) == 0 {
-		t.Fatal("parseContent return empty slice")
+
+	want, err := os.ReadFile(htmlPath)
+	if err != nil {
+		t.Fatalf("reading golden HTML: %v", err)
 	}
 
-	checks := []struct{ name, want string }{
-		{"h1", `<h1>Test Markdown File</h1>`},
-		{"paragraph", `<p>Just a test</p>`},
-		{"h2", `<h2>Bullets</h2>`},
-		{"ul", `<ul>`},
-		{"li", `<li>Links <a href="https://example.com" rel="nofollow">Link1</a></li>`},
-		{"blockquote", `<blockquote>`},
-		{"strong", `<strong>bold</strong>`},
-		{"em", `<em>italic</em>`},
-	}
-
-	for _, c := range checks {
-		if !bytes.Contains(got, []byte(c.want)) {
-			t.Errorf("fragment %q no found in output:\nexpected to include: %s", c.name, c.want)
-		}
+	if !bytes.Equal(got, want) {
+		t.Errorf("mismatch:\n got=\n%s\n\nwant=\n%s", got, want)
 	}
 }

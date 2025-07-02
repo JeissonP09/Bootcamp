@@ -53,21 +53,17 @@ func run(in, out string) error {
 		return fmt.Errorf("reading %q: %w", in, err)
 	}
 
-	body := parseContent(mdData)
+	html := parseContent(mdData)
 
-	var filename string
-	if out != "" {
-		filename = out + ".html"
-	} else {
+	filename := out
+	if filename == "" {
 		base := filepath.Base(in)
 		filename = base + ".html"
+	} else {
+		filename += ".html"
 	}
 
-	data := []byte(header)
-	data = append(data, body...)
-	data = append(data, []byte(footer)...)
-
-	if err := saveHTML(filename, data); err != nil {
+	if err := saveHTML(filename, html); err != nil {
 		return fmt.Errorf("could not be saved %q: %w", filename, err)
 	}
 	return nil
@@ -76,5 +72,11 @@ func run(in, out string) error {
 func parseContent(input []byte) []byte {
 	unsafe := blackfriday.Run(input)
 	safe := bluemonday.UGCPolicy().SanitizeBytes(unsafe)
-	return safe
+
+	var html []byte
+	html = append(html, []byte(header)...)
+	html = append(html, safe...)
+	html = append(html, []byte(footer)...)
+
+	return html
 }

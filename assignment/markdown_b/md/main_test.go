@@ -15,8 +15,12 @@ func TestRun(t *testing.T) {
 
 	os.Chdir(tmp)
 
-	err := run("testfile")
+	err := os.WriteFile("testfile.md", []byte("#Test\n"), 0644)
 	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := run("testfile.md", "testfile"); err != nil {
 		t.Fatalf("run return error: %v", err)
 	}
 
@@ -31,5 +35,26 @@ func TestRun(t *testing.T) {
 	}
 	if !bytes.HasSuffix(content, []byte(footer)) {
 		t.Error("lack footer")
+	}
+}
+
+func TestParseContent(t *testing.T) {
+	mdPath := filepath.Join("testdata", "model.md")
+	htmlPath := filepath.Join("testdata", "model.html")
+
+	md, err := os.ReadFile(mdPath)
+	if err != nil {
+		t.Fatalf("reading Markdown: %v", err)
+	}
+
+	got := parseContent(md)
+
+	want, err := os.ReadFile(htmlPath)
+	if err != nil {
+		t.Fatalf("reading golden HTML: %v", err)
+	}
+
+	if !bytes.Equal(got, want) {
+		t.Errorf("mismatch:\n got=\n%s\n\nwant=\n%s", got, want)
 	}
 }

@@ -4,28 +4,30 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
-func TestRun(t *testing.T) {
+func TestRunUsingOutFlag(t *testing.T) {
 	tmp := t.TempDir()
 
 	oldWd, _ := os.Getwd()
 	t.Cleanup(func() { os.Chdir(oldWd) })
-
 	os.Chdir(tmp)
-
-	err := os.WriteFile("testfile.md", []byte("#Test\n"), 0644)
+	
+	err := os.WriteFile("testfile.md", []byte("# Test\n"), 0644)
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	if err := run("testfile.md", "testfile"); err != nil {
-		t.Fatalf("run return error: %v", err)
+	
+	var output bytes.Buffer
+	err = run("testfile.md", "departure", &output)
+	if err != nil {
+		t.Fatalf("error in run: %v", err)
 	}
 
-	path := filepath.Join(tmp, "testfile.html")
-	content, err := os.ReadFile(path)
+	filename := filepath.Join(tmp, "departure.html")
+	content, err :=os.ReadFile(filename)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -36,6 +38,38 @@ func TestRun(t *testing.T) {
 	if !bytes.HasSuffix(content, []byte(footer)) {
 		t.Error("lack footer")
 	}
+}
+
+func TestRunWithoutOutFlag(t * testing.T) {
+	tmp := t.TempDir()
+
+	oldWd, _ := os.Getwd()
+	t.Cleanup(func() { os.Chdir(oldWd) })
+	os.Chdir(tmp)
+
+	err := os.WriteFile("temp.md", []byte("# Test\n"), 0644)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var output bytes.Buffer
+	err = run("temp.md", "", &output)
+	if err != nil {
+		t.Fatalf("error in run: %v", err)
+	}
+
+	filename := strings.TrimSpace(output.String())
+	content, err := os.ReadFile(filename)
+	if err != nil {
+		t.Fatalf("The generated file could not be read: %v", err)
+	}
+	
+	if !bytes.HasPrefix(content, []byte(header)) {
+		t.Error("lack header")
+	}
+	if !bytes.HasSuffix(content, []byte(footer)) {
+		t.Error("lack footer")
+	}	
 }
 
 func TestParseContent(t *testing.T) {

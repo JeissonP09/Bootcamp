@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"os"
-	"path/filepath"
 
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday/v2"
@@ -29,7 +29,7 @@ func main() {
 	out := flag.String("out", "", "name output (without HTML)")
 	flag.Parse()
 
-	if err := run(*in, *out); err != nil {
+	if err := run(*in, *out, os.Stdout); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
@@ -43,7 +43,7 @@ func saveHTML(path string, data []byte) error {
 	return nil
 }
 
-func run(in, out string) error {
+func run(in, out string, writer io.Writer) error {
 	if in == "" {
 		return fmt.Errorf("the flag -in is obligatory")
 	}
@@ -55,17 +55,24 @@ func run(in, out string) error {
 
 	html := parseContent(mdData)
 
-	filename := out
-	if filename == "" {
-		base := filepath.Base(in)
-		filename = base + ".html"
+	var filename string
+	if out == "" {
+		tmpFile, err := os.CreateTemp(".", "md*.html")
+		if err != nil {
+			return fmt.Errorf("created temp file: %w", err)
+		}
+		tmpFile.Close()
+		filename = tmpFile.Name()
 	} else {
-		filename += ".html"
+		filename = out + ".html"
 	}
 
 	if err := saveHTML(filename, html); err != nil {
 		return fmt.Errorf("could not be saved %q: %w", filename, err)
 	}
+
+	fmt.Fprintln(writer, filename)
+
 	return nil
 }
 

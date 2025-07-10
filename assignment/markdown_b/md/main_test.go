@@ -9,67 +9,66 @@ import (
 )
 
 func TestRunUsingOutFlag(t *testing.T) {
-	tmp := t.TempDir()
+	dir := "testdata"
+	mdPath := filepath.Join(dir, "model.md")
+	outBase := filepath.Join(dir, "departure")
+	outPath := filepath.Join(dir, "departure.html")
+	goldenPath := filepath.Join(dir, "model.html")
 
-	oldWd, _ := os.Getwd()
-	t.Cleanup(func() { os.Chdir(oldWd) })
-	os.Chdir(tmp)
-	
-	err := os.WriteFile("testfile.md", []byte("# Test\n"), 0644)
-	if err != nil {
-		t.Fatal(err)
-	}
+	_ = os.Remove(outPath)
 	
 	var output bytes.Buffer
-	err = run("testfile.md", "departure", &output)
+	err := run(mdPath, outBase, &output)
 	if err != nil {
 		t.Fatalf("error in run: %v", err)
 	}
 
-	filename := filepath.Join(tmp, "departure.html")
-	content, err :=os.ReadFile(filename)
-	if err != nil {
-		t.Fatal(err)
+	if strings.TrimSpace(output.String()) != outPath {
+		t.Errorf("output path = %q, expected %q", output.String(), outPath)
 	}
 
-	if !bytes.HasPrefix(content, []byte(header)) {
-		t.Error("lack header")
+	got, err := os.ReadFile(outPath)
+	if err != nil {
+		t.Fatalf("reading generated output: %v", err)
 	}
-	if !bytes.HasSuffix(content, []byte(footer)) {
-		t.Error("lack footer")
+
+	want, err := os.ReadFile(goldenPath)
+	if err != nil {
+		t.Fatalf("reading golden HTML: %v", err)
+	}
+
+	if !bytes.Equal(got, want) {
+		t.Errorf("HTML mismatch\n---- GOT ----\n%s\n---- WANT ----\n%s\n", got, want)
 	}
 }
 
 func TestRunWithoutOutFlag(t * testing.T) {
-	tmp := t.TempDir()
-
-	oldWd, _ := os.Getwd()
-	t.Cleanup(func() { os.Chdir(oldWd) })
-	os.Chdir(tmp)
-
-	err := os.WriteFile("temp.md", []byte("# Test\n"), 0644)
-	if err != nil {
-		t.Fatal(err)
-	}
+	dir := "testdata"
+	mdPath := filepath.Join(dir, "model.md")
+	htmlGolden := filepath.Join(dir, "model.html")
 
 	var output bytes.Buffer
-	err = run("temp.md", "", &output)
+	err := run(mdPath, "", &output)
 	if err != nil {
 		t.Fatalf("error in run: %v", err)
 	}
 
-	filename := strings.TrimSpace(output.String())
-	content, err := os.ReadFile(filename)
+	generatedPath := strings.TrimSpace(output.String())
+	got, err := os.ReadFile(generatedPath)
 	if err != nil {
-		t.Fatalf("The generated file could not be read: %v", err)
+		t.Fatalf("reading generated file: %v", err)
+	}
+
+	want, err := os.ReadFile(htmlGolden)
+	if err != nil {
+		t.Fatalf("reading golden HTML: %v", err)
 	}
 	
-	if !bytes.HasPrefix(content, []byte(header)) {
-		t.Error("lack header")
+	if !bytes.Equal(got, want) {
+		t.Errorf("HTML mismatch\n---- GOT ----\n%s\n---- WANT ----\n%s\n", got, want)
 	}
-	if !bytes.HasSuffix(content, []byte(footer)) {
-		t.Error("lack footer")
-	}	
+
+	_ = os.Remove(generatedPath)
 }
 
 func TestParseContent(t *testing.T) {
@@ -89,6 +88,6 @@ func TestParseContent(t *testing.T) {
 	}
 
 	if !bytes.Equal(got, want) {
-		t.Errorf("mismatch:\n got=\n%s\n\nwant=\n%s", got, want)
+		t.Errorf("mismatch:\n ----GOT----\n%s\n\n----WANT----\n%s", got, want)
 	}
 }

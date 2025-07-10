@@ -4,38 +4,71 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
-func TestRun(t *testing.T) {
-	tmp := t.TempDir()
+func TestRunUsingOutFlag(t *testing.T) {
+	dir := "testdata"
+	mdPath := filepath.Join(dir, "model.md")
+	outBase := filepath.Join(dir, "departure")
+	outPath := filepath.Join(dir, "departure.html")
+	goldenPath := filepath.Join(dir, "model.html")
 
-	oldWd, _ := os.Getwd()
-	t.Cleanup(func() { os.Chdir(oldWd) })
-
-	os.Chdir(tmp)
-
-	err := os.WriteFile("testfile.md", []byte("#Test\n"), 0644)
+	_ = os.Remove(outPath)
+	
+	var output bytes.Buffer
+	err := run(mdPath, outBase, &output)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("error in run: %v", err)
 	}
 
-	if err := run("testfile.md", "testfile"); err != nil {
-		t.Fatalf("run return error: %v", err)
+	if strings.TrimSpace(output.String()) != outPath {
+		t.Errorf("output path = %q, expected %q", output.String(), outPath)
 	}
 
-	path := filepath.Join(tmp, "testfile.html")
-	content, err := os.ReadFile(path)
+	got, err := os.ReadFile(outPath)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("reading generated output: %v", err)
 	}
 
-	if !bytes.HasPrefix(content, []byte(header)) {
-		t.Error("lack header")
+	want, err := os.ReadFile(goldenPath)
+	if err != nil {
+		t.Fatalf("reading golden HTML: %v", err)
 	}
-	if !bytes.HasSuffix(content, []byte(footer)) {
-		t.Error("lack footer")
+
+	if !bytes.Equal(got, want) {
+		t.Errorf("HTML mismatch\n---- GOT ----\n%s\n---- WANT ----\n%s\n", got, want)
 	}
+}
+
+func TestRunWithoutOutFlag(t * testing.T) {
+	dir := "testdata"
+	mdPath := filepath.Join(dir, "model.md")
+	htmlGolden := filepath.Join(dir, "model.html")
+
+	var output bytes.Buffer
+	err := run(mdPath, "", &output)
+	if err != nil {
+		t.Fatalf("error in run: %v", err)
+	}
+
+	generatedPath := strings.TrimSpace(output.String())
+	got, err := os.ReadFile(generatedPath)
+	if err != nil {
+		t.Fatalf("reading generated file: %v", err)
+	}
+
+	want, err := os.ReadFile(htmlGolden)
+	if err != nil {
+		t.Fatalf("reading golden HTML: %v", err)
+	}
+	
+	if !bytes.Equal(got, want) {
+		t.Errorf("HTML mismatch\n---- GOT ----\n%s\n---- WANT ----\n%s\n", got, want)
+	}
+
+	_ = os.Remove(generatedPath)
 }
 
 func TestParseContent(t *testing.T) {
@@ -55,6 +88,6 @@ func TestParseContent(t *testing.T) {
 	}
 
 	if !bytes.Equal(got, want) {
-		t.Errorf("mismatch:\n got=\n%s\n\nwant=\n%s", got, want)
+		t.Errorf("mismatch:\n ----GOT----\n%s\n\n----WANT----\n%s", got, want)
 	}
 }

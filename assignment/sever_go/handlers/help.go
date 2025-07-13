@@ -1,10 +1,9 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 )
 
-func Help(w http.ResponseWriter, r *http.Request){
-	fmt.Fprintln(w, "Hello help!")
+func HelpHandler(w http.ResponseWriter, r *http.Request){
+	w.Write([]byte("Hello help!"))
 }

@@ -1,4 +1,3 @@
-// Created main.go in directory Server
 package main
 
 import (
@@ -8,27 +7,21 @@ import (
 	"net/http"
 )
 
-// Created controller "rootHandler"
-func rootHandler(w http.ResponseWriter, r *http.Request){
-	// Validates if the path is correct
-	if r.URL.Path != "/" {
-		http.NotFound(w, r)
-		return
-	}
-	w.Write([]byte("Hello World!!"))
-}
-
 func main() {
-	// Created mux server
-	mux := http.NewServeMux()
-
-	mux.HandleFunc("/", rootHandler)
-
-	// Created flag "-p" type int, to manage the port
+	// flags "-h" host and "-p" port
+	host := flag.String("h", "localhost", "host fot default")
 	port := flag.Int("p", 8080, "port of server")
 	flag.Parse()
 
-	addr := fmt.Sprintf(":%d", *port)
+	// Construct the address (host:port)
+	addr := fmt.Sprintf("%s:%d", *host, *port)
 
-	log.Fatal(http.ListenAndServe(addr, mux))
+	// Created the server with Address and Handler
+	server := &http.Server{
+		Addr: addr,
+		Handler: newMux(),
+	}
+	
+	// Start the server and errors
+	log.Fatal(server.ListenAndServe())
 }

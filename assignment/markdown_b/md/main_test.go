@@ -8,13 +8,15 @@ import (
 	"testing"
 )
 
-func TestRunUsingOutFlag(t *testing.T) {
-	dir := "testdata"
-	mdPath := filepath.Join(dir, "model.md")
-	outBase := filepath.Join(dir, "departure")
-	outPath := filepath.Join(dir, "departure.html")
-	goldenPath := filepath.Join(dir, "model.html")
+var (
+	dir = "testdata"
+	mdPath = filepath.Join(dir, "model.md")
+	outBase = filepath.Join(dir, "departure")
+	outPath = filepath.Join(dir, "departure.html")
+	goldenPath = filepath.Join(dir, "model.html")
+)
 
+func TestRunUsingOutFlag(t *testing.T) {
 	_ = os.Remove(outPath)
 	
 	var output bytes.Buffer
@@ -43,10 +45,6 @@ func TestRunUsingOutFlag(t *testing.T) {
 }
 
 func TestRunWithoutOutFlag(t * testing.T) {
-	dir := "testdata"
-	mdPath := filepath.Join(dir, "model.md")
-	htmlGolden := filepath.Join(dir, "model.html")
-
 	var output bytes.Buffer
 	err := run(mdPath, "", &output)
 	if err != nil {
@@ -59,7 +57,7 @@ func TestRunWithoutOutFlag(t * testing.T) {
 		t.Fatalf("reading generated file: %v", err)
 	}
 
-	want, err := os.ReadFile(htmlGolden)
+	want, err := os.ReadFile(goldenPath)
 	if err != nil {
 		t.Fatalf("reading golden HTML: %v", err)
 	}
@@ -72,9 +70,6 @@ func TestRunWithoutOutFlag(t * testing.T) {
 }
 
 func TestParseContent(t *testing.T) {
-	mdPath := filepath.Join("testdata", "model.md")
-	htmlPath := filepath.Join("testdata", "model.html")
-
 	md, err := os.ReadFile(mdPath)
 	if err != nil {
 		t.Fatalf("reading Markdown: %v", err)
@@ -82,7 +77,7 @@ func TestParseContent(t *testing.T) {
 
 	got := parseContent(md)
 
-	want, err := os.ReadFile(htmlPath)
+	want, err := os.ReadFile(goldenPath)
 	if err != nil {
 		t.Fatalf("reading golden HTML: %v", err)
 	}

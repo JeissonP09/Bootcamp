@@ -8,6 +8,13 @@ import (
 	"testing"
 )
 
+type testCase struct {
+		name 			string
+		path 			string
+		expectedCode 	int
+		expectedContent string
+	}
+
 func setupAPI(t *testing.T) (url string, cleaner func()) {
 	t.Helper()
 
@@ -25,68 +32,59 @@ func setupAPI(t *testing.T) (url string, cleaner func()) {
 	return url, cleaner
 }
 
-func TestGetRoot(t *testing.T) {
-	path := "/"
-	expectedCode := http.StatusOK
-	expectedContent := "Hello World!!"
-	
+func TestGet(t *testing.T) {
+	cases := []testCase{
+		{
+			name: "GET Root",
+			path: "/",
+			expectedCode: http.StatusOK,
+			expectedContent: "Hello World!!",
+		},
+		{
+			name: "GET Not Found",
+			path: "/no-exists",
+			expectedCode: http.StatusNotFound,
+			expectedContent: "404",
+		},
+	}
+
 	// Start server of test
 	url, cleaner := setupAPI(t)
 	defer cleaner()
-	
-	// Generates the request Get
-	res, err := http.Get(url + path)
-	if err != nil {
-		t.Fatalf("Error in Get: %v", err)
-	}
-	defer res.Body.Close()
-	
-	// Validates status code
-	if res.StatusCode != expectedCode {
-		t.Errorf("code expected %d (%s), but received %d (%s)", expectedCode, http.StatusText(expectedCode), res.StatusCode, http.StatusText(res.StatusCode))
-	}
 
-	// Reads and validates the body content
-	bodyBytes, _ := io.ReadAll(res.Body)
-	if err != nil {
-		t.Fatalf("error reading response body: %v", err)
-	}
-	body := string(bodyBytes)
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			r, err := http.Get(url + tc.path)
+			if err != nil {
+				t.Fatalf("Error in GET: %v", err)
+			}
+			defer r.Body.Close()
 
-	if !strings.Contains(body, expectedContent) {
-		t.Errorf("expected content %q, but received %q", expectedContent, body)
-	}
-}
+			// Validates status code
+			if r.StatusCode != tc.expectedCode {
+				t.Errorf(
+					"expected code %d (%s), but received %d (%s)", 
+					tc.expectedCode, http.StatusText(tc.expectedCode), 
+					r.StatusCode, http.StatusText(r.StatusCode),
+				)
+			}
 
-func TestGetNotFound(t *testing.T) {
-	path := "/no-exists"
-	expectedCode := http.StatusNotFound
-	expectedContent := "404"
-	
-	// Start server of test
-	url, cleaner := setupAPI(t)
-	defer cleaner()
-	
-	// Genetares the request Get
-	res, err := http.Get(url + path)
-	if err != nil {
-		t.Fatalf("Error in Get: %v", err)
-	}
-	defer res.Body.Close()
-	
-	// Validates status code
-	if res.StatusCode != expectedCode {
-		t.Errorf("code expected %d (%s), but received %d (%s)", expectedCode, http.StatusText(expectedCode), res.StatusCode, http.StatusText(res.StatusCode))
-	}
+			// Reads and validates the body content
+			bodyBytes, err := io.ReadAll(r.Body)
+			if err != nil {
+				t.Fatalf("error reading response body: %v", err)
+			}
+			body := string(bodyBytes)
 
-	// Reads and validates the body content
-	bodyBytes, _ := io.ReadAll(res.Body)
-	if err != nil {
-		t.Fatalf("error reading response body: %v", err)
-	}
-	body := string(bodyBytes)
-	
-	if !strings.Contains(body, expectedContent) {
-		t.Errorf("expected content %q, but received %q", expectedContent, body)
+			// Validates the type content
+			switch r.Header.Get("Content-Type") {
+			case "text/plain; charset=utf-8":
+				if !strings.Contains(body, tc.expectedContent){
+					t.Errorf("content expected %q, received %q", tc.expectedContent, body)
+				}
+			default:
+				t.Fatalf("Unsupported Content-Type: %q", r.Header.Get("Content-Type"))
+			}
+		})
 	}
 }

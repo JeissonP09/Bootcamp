@@ -1,9 +1,28 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 )
+
+func jsonReply(w http.ResponseWriter, r *http.Request, status int, payload *todoResponse) {
+	// Convert payload a format JSON and use func errorReply if fail
+	data, err := json.Marshal(payload)
+	if err != nil {
+		errorReply(w, r, http.StatusInternalServerError, "Error generated JSON response")
+		return
+	}
+
+	// sets the type of content and format JSON
+	w.Header().Set("Content-Type", "application/json")
+
+	// sets the HTTP status code
+	w.WriteHeader(status)
+
+	// send the JSON
+	w.Write(data)
+}
 
 func textReply(w http.ResponseWriter, r *http.Request, status int, payload string) {
 	// sets the type of content and text plain

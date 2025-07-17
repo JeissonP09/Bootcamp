@@ -10,7 +10,7 @@ func jsonReply(w http.ResponseWriter, r *http.Request, status int, payload *todo
 	// Convert payload a format JSON and use func errorReply if fail
 	data, err := json.Marshal(payload)
 	if err != nil {
-		errorReply(w, r, http.StatusInternalServerError, "Error generated JSON response")
+		errorReply(w, r, http.StatusInternalServerError, err.Error())
 		return
 	}
 

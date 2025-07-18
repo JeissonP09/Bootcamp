@@ -9,18 +9,18 @@ import (
 )
 
 type testCase struct {
-		name 			string
-		path 			string
-		expectedCode 	int
-		expectedContent string
-	}
+	name            string
+	path            string
+	expectedCode    int
+	expectedContent string
+}
 
 func setupAPI(t *testing.T) (url string, cleaner func()) {
 	t.Helper()
 
 	// Created server with newMux
-	server := httptest.NewServer(newMux())
-	
+	server := httptest.NewServer(newMux("/todo"))
+
 	// Assings the URL the server
 	url = server.URL
 
@@ -35,15 +35,15 @@ func setupAPI(t *testing.T) (url string, cleaner func()) {
 func TestGet(t *testing.T) {
 	cases := []testCase{
 		{
-			name: "GET Root",
-			path: "/",
-			expectedCode: http.StatusOK,
+			name:            "GET Root",
+			path:            "/",
+			expectedCode:    http.StatusOK,
 			expectedContent: "Hello World!!",
 		},
 		{
-			name: "GET Not Found",
-			path: "/no-exists",
-			expectedCode: http.StatusNotFound,
+			name:            "GET Not Found",
+			path:            "/no-exists",
+			expectedCode:    http.StatusNotFound,
 			expectedContent: "404",
 		},
 	}
@@ -63,8 +63,8 @@ func TestGet(t *testing.T) {
 			// Validates status code
 			if r.StatusCode != tc.expectedCode {
 				t.Errorf(
-					"expected code %d (%s), but received %d (%s)", 
-					tc.expectedCode, http.StatusText(tc.expectedCode), 
+					"expected code %d (%s), but received %d (%s)",
+					tc.expectedCode, http.StatusText(tc.expectedCode),
 					r.StatusCode, http.StatusText(r.StatusCode),
 				)
 			}
@@ -79,7 +79,7 @@ func TestGet(t *testing.T) {
 			// Validates the type content
 			switch r.Header.Get("Content-Type") {
 			case "text/plain; charset=utf-8":
-				if !strings.Contains(body, tc.expectedContent){
+				if !strings.Contains(body, tc.expectedContent) {
 					t.Errorf("content expected %q, received %q", tc.expectedContent, body)
 				}
 			default:

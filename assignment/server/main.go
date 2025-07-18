@@ -9,6 +9,8 @@ import (
 
 func main() {
 	// flags "-h" host and "-p" port
+	// add flag "-f" data file type json with todo
+	dataFile := flag.String("f", "datafile.json", "data file of todo")
 	host := flag.String("h", "localhost", "host fot default")
 	port := flag.Int("p", 8080, "port of server")
 	flag.Parse()
@@ -18,10 +20,10 @@ func main() {
 
 	// Created the server with Address and Handler
 	server := &http.Server{
-		Addr: addr,
-		Handler: newMux(),
+		Addr:    addr,
+		Handler: newMux(*dataFile),
 	}
-	
+
 	// Start the server and errors
 	log.Fatal(server.ListenAndServe())
 }

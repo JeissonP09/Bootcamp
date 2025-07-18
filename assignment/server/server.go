@@ -43,11 +43,16 @@ func errorReply(w http.ResponseWriter, r *http.Request, status int, payload stri
 	http.Error(w, payload, status)
 }
 
-func newMux() http.Handler {
+func newMux(dataFile string) http.Handler {
 	// Created mux server
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", rootHandler)
+
+	// We register the path "/todo" and "/todo/"
+	handler := getAllHandler{dataFile: dataFile}
+	mux.Handle("/todo", handler)
+	mux.Handle("/todo/", handler)
 
 	return mux
 }

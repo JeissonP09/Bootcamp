@@ -21,7 +21,7 @@ func setupAPI(t *testing.T) (url string, cleaner func()) {
 	// Created server with newMux
 	server := httptest.NewServer(newMux("/todo"))
 
-	// Assings the URL the server
+	// Assigns the URL the server
 	url = server.URL
 
 	// Close the server

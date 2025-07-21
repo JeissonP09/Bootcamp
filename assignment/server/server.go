@@ -15,8 +15,8 @@ func jsonReply(w http.ResponseWriter, r *http.Request, status int, payload *todo
 	}
 
 	// sets the type of content and format JSON
-	w.Header().Set("Content-Type", "application/json")
 
+	w.Header().Set("Content-Type", "application/json")
 	// sets the HTTP status code
 	w.WriteHeader(status)
 
@@ -31,7 +31,7 @@ func textReply(w http.ResponseWriter, r *http.Request, status int, payload strin
 	// sets the HTTP status code
 	w.WriteHeader(status)
 
-	// write the menssage in the body of the response
+	// write the message in the body of the response
 	w.Write([]byte(payload))
 }
 
@@ -50,9 +50,7 @@ func newMux(dataFile string) http.Handler {
 	mux.HandleFunc("/", rootHandler)
 
 	// We register the path "/todo" and "/todo/"
-	handler := getAllHandler{dataFile: dataFile}
-	mux.Handle("/todo", handler)
-	mux.Handle("/todo/", handler)
+	mux.Handle("/todo", router(dataFile))
 
 	return mux
 }

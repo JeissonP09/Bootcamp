@@ -1,14 +1,1 @@
-[
-  {
-    "Task": "my first task",
-    "Done": false,
-    "CreatedAt": "2025-07-14T16:44:49.287402-05:00",
-    "CompletedAt": "0001-01-01T00:00:00Z"
-  },
-  {
-    "Task": "my second task",
-    "Done": true,
-    "CreatedAt": "2025-07-14T16:44:49.287402-05:00",
-    "CompletedAt": "0001-01-01T00:00:00Z"
-  }
-]
+[{"Task":"my first task","Done":false,"CreatedAt":"2025-07-14T16:44:49.287402-05:00","CompletedAt":"0001-01-01T00:00:00Z"},{"Task":"my second task","Done":true,"CreatedAt":"2025-07-14T16:44:49.287402-05:00","CompletedAt":"0001-01-01T00:00:00Z"},{"Task":"Read a book","Done":false,"CreatedAt":"2025-07-21T13:31:11.568170467-05:00","CompletedAt":"0001-01-01T00:00:00Z"},{"Task":"Practice code","Done":false,"CreatedAt":"2025-07-21T13:32:15.245343256-05:00","CompletedAt":"0001-01-01T00:00:00Z"},{"Task":"Install Docker Desktop","Done":false,"CreatedAt":"2025-07-21T13:32:39.753173764-05:00","CompletedAt":"0001-01-01T00:00:00Z"}]

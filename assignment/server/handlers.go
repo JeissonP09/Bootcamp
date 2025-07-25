@@ -1,45 +1,72 @@
 package main
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/JeissonP09/todo"
 )
 
-// Created a type with dataFile
-type getAllHandler struct {
-	dataFile string
+// router configures routes to handle tasks.
+func router(dataFile string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var list todo.List
+
+		err := list.Get(dataFile)
+		if err != nil {
+			errorReply(w, r, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		switch r.Method {
+		case http.MethodGet:
+			getAllHandler(w, r, &list)
+		case http.MethodPost:
+			addHandler(w, r, &list, dataFile)
+		default:
+			errorReply(w, r, http.StatusMethodNotAllowed, "Method not allowed")
+		}
+	}
 }
 
-func (h getAllHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	list := todo.List{}
+// addHAndler adds a new task to the file.
+func addHandler(w http.ResponseWriter, r *http.Request, list *todo.List, dataFile string) {
+	type NewTask struct {
+		Task string `json:"task"`
+	}
 
-	// We get data from the file
-	err := list.Get(h.dataFile)
+	var item NewTask
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&item)
+	if err != nil {
+		errorReply(w, r, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	list.Add(item.Task)
+
+	err = list.Save(dataFile)
 	if err != nil {
 		errorReply(w, r, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	// Prepare the response
-	resp := todoResponse{
-		Results: list,
-	}
-
-	// Send response in type json with status 200 Ok
-	jsonReply(w, r, http.StatusOK, &resp)
-
+	textReply(w, r, http.StatusCreated, "Task created successfully")
 }
 
-// Created controller "rootHandler"
+// getAllHandler send all tasks as a JSON response.
+func getAllHandler(w http.ResponseWriter, r *http.Request, list *todo.List) {
+	reply := &todoResponse{Results: *list}
+	jsonReply(w, r, http.StatusOK, reply)
+}
+
+// rootHandler response with a greeting if the URL is "/"
 func rootHandler(w http.ResponseWriter, r *http.Request) {
-	// Validates if the path is correct "/"
-	// If there is an error we use the errorReply function
 	if r.URL.Path != "/" {
 		errorReply(w, r, http.StatusNotFound, "404 page not found")
 		return
 	}
 
-	// Response with textReply function
 	textReply(w, r, http.StatusOK, "Hello World!!")
 }

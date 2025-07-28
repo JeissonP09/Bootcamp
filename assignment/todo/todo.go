@@ -8,14 +8,14 @@ import (
 	"time"
 )
 
-type item struct {
+type Todo struct {
 	Task        string
 	Done        bool
 	CreatedAt   time.Time
 	CompletedAt time.Time
 }
 
-type List []item
+type List []Todo
 
 func (l *List) String() string {
 	var b strings.Builder
@@ -32,7 +32,7 @@ func (l *List) String() string {
 }
 
 func (l *List) Add(title string) {
-	newItem := item{Task: title, Done: false, CreatedAt: time.Now()}
+	newItem := Todo{Task: title, Done: false, CreatedAt: time.Now()}
 	*l = append(*l, newItem)
 }
 

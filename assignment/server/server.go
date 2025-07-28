@@ -42,6 +42,7 @@ func newMux(dataFile string) http.Handler {
 
 	mux.HandleFunc("/", rootHandler)
 	mux.Handle("/todo", router(dataFile))
+	mux.Handle("/todo/", router(dataFile))
 
 	return mux
 }

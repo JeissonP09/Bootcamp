@@ -39,6 +39,8 @@ func router(dataFile string) http.HandlerFunc {
 				getOneHandler(w, r, &list, id)
 			case http.MethodDelete:
 				deleteHandler(w, r, &list, id, dataFile)
+			case http.MethodPatch:
+				completeHandler(w, r, &list, id, dataFile)
 			default:
 				errorReply(w, r, http.StatusMethodNotAllowed, "Method not allowed")
 			}
@@ -58,6 +60,21 @@ func router(dataFile string) http.HandlerFunc {
 		}
 		errorReply(w, r, http.StatusNotFound, "Not found")
 	}
+}
+
+// completeHandler mark a task as completed and respond with your updated information.
+func completeHandler(w http.ResponseWriter, r *http.Request, list *todo.List, id int, dataFile string) {
+	(*list)[id].Done = true
+
+	err := list.Save(dataFile)
+	if err != nil {
+		errorReply(w, r, http.StatusInternalServerError, err.Error())
+		return
+	}
+	status := &todoResponse{
+		Results: []todo.Todo{(*list)[id]},
+	}
+	jsonReply(w, r, http.StatusOK, status)
 }
 
 // deleteHandler delete a task from the list with your ID,

@@ -178,8 +178,8 @@ func TestDelete(t *testing.T) {
 		}
 		defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusOK {
-			t.Errorf("expected 200 OK, got %d", resp.StatusCode)
+		if resp.StatusCode != http.StatusNoContent {
+			t.Errorf("expected 204 No Content, got %d", resp.StatusCode)
 		}
 	})
 
@@ -210,7 +210,7 @@ func TestComplete(t *testing.T) {
 	defer clean()
 
 	t.Run("Complete", func(t *testing.T) {
-		req, err := http.NewRequest(http.MethodPatch, server.URL+"/todo/0", nil)
+		req, err := http.NewRequest(http.MethodPatch, server.URL+"/todo/0?complete=true", nil)
 		if err != nil {
 			t.Fatalf("creating PATCH request: %v", err)
 		}

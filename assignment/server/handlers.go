@@ -64,6 +64,12 @@ func router(dataFile string) http.HandlerFunc {
 
 // completeHandler mark a task as completed and respond with your updated information.
 func completeHandler(w http.ResponseWriter, r *http.Request, list *todo.List, id int, dataFile string) {
+	complete := r.URL.Query().Get("complete")
+	if complete != "true" {
+		errorReply(w, r, http.StatusBadRequest, "Missing or invalid 'complete' parameter")
+		return
+	}
+
 	(*list)[id].Done = true
 
 	err := list.Save(dataFile)
@@ -90,7 +96,7 @@ func deleteHandler(w http.ResponseWriter, r *http.Request, list *todo.List, id i
 	reply := &todoResponse{
 		Results: []todo.Todo{},
 	}
-	jsonReply(w, r, http.StatusOK, reply)
+	jsonReply(w, r, http.StatusNoContent, reply)
 }
 
 // getOneHandler responds with a specific task in JSON format,

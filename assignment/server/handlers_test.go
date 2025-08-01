@@ -58,7 +58,7 @@ func setupAPI(t *testing.T) (server *httptest.Server, clean func()) {
 }
 
 func TestGet(t *testing.T) {
-	srv, clean := setupAPI(t)
+	server, clean := setupAPI(t)
 	defer clean()
 
 	tests := []struct {
@@ -83,7 +83,7 @@ func TestGet(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			resp, err := http.Get(srv.URL + tc.path)
+			resp, err := http.Get(server.URL + tc.path)
 			if err != nil {
 				t.Fatalf("GET %s: %v", tc.path, err)
 			}
@@ -110,7 +110,7 @@ func TestGet(t *testing.T) {
 }
 
 func TestAdd(t *testing.T) {
-	srv, clean := setupAPI(t)
+	server, clean := setupAPI(t)
 	defer clean()
 
 	t.Run("Add", func(t *testing.T) {
@@ -125,7 +125,7 @@ func TestAdd(t *testing.T) {
 			t.Fatalf("encoding task: %v", err)
 		}
 
-		resp, err := http.Post(srv.URL+"/todo", "application/json", &body)
+		resp, err := http.Post(server.URL+"/todo", "application/json", &body)
 		if err != nil {
 			t.Fatalf("POST error: %v", err)
 		}
@@ -137,7 +137,7 @@ func TestAdd(t *testing.T) {
 	})
 
 	t.Run("CheckAdd", func(t *testing.T) {
-		resp, err := http.Get(srv.URL + "/todo/3")
+		resp, err := http.Get(server.URL + "/todo/3")
 		if err != nil {
 			t.Fatalf("GET error: %v", err)
 		}
@@ -158,6 +158,104 @@ func TestAdd(t *testing.T) {
 
 		if data.Results[0].Task != "Task 4" {
 			t.Errorf("expected 'Task 4', got '%s'", data.Results[0].Task)
+		}
+	})
+}
+
+func TestDelete(t *testing.T) {
+	server, clean := setupAPI(t)
+	defer clean()
+
+	t.Run("Delete", func(t *testing.T) {
+		req, err := http.NewRequest(http.MethodDelete, server.URL+"/todo/0", nil)
+		if err != nil {
+			t.Fatalf("creating DELETE request: %v", err)
+		}
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatalf("execute DELETE request: %v", err)
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusNoContent {
+			t.Errorf("expected 204 No Content, got %d", resp.StatusCode)
+		}
+	})
+
+	t.Run("CheckDelete", func(t *testing.T) {
+		resp, err := http.Get(server.URL + "/todo")
+		if err != nil {
+			t.Fatalf("GET error: %v", err)
+		}
+		defer resp.Body.Close()
+
+		var data testResponse
+		if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+			t.Fatalf("decoding response: %v", err)
+		}
+
+		if len(data.Results) != 2 {
+			t.Errorf("expected 2 results, got %d", len(data.Results))
+		}
+
+		if data.Results[0].Task != "Task 2" {
+			t.Errorf("expected 'Task 2', got '%s'", data.Results[0].Task)
+		}
+	})
+}
+
+func TestComplete(t *testing.T) {
+	server, clean := setupAPI(t)
+	defer clean()
+
+	t.Run("Complete", func(t *testing.T) {
+		req, err := http.NewRequest(http.MethodPatch, server.URL+"/todo/0?complete=true", nil)
+		if err != nil {
+			t.Fatalf("creating PATCH request: %v", err)
+		}
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatalf("execute PATCH request: %v", err)
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			t.Errorf("expected 200 OK, got %d", resp.StatusCode)
+		}
+	})
+
+	t.Run("CheckComplete", func(t *testing.T) {
+		resp, err := http.Get(server.URL + "/todo")
+		if err != nil {
+			t.Fatalf("GET error: %v", err)
+		}
+		defer resp.Body.Close()
+
+		var data struct {
+			Results []struct {
+				Task string `json:"task"`
+				Done bool   `json:"done"`
+			} `json:"results"`
+			Date         time.Time `json:"date"`
+			TotalResults int       `json:"total_results"`
+		}
+
+		if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+			t.Fatalf("decoding response: %v", err)
+		}
+
+		if data.TotalResults != 3 {
+			t.Errorf("expected 3 results, got %d", data.TotalResults)
+		}
+
+		if !data.Results[0].Done {
+			t.Errorf("expected result to be done")
+		}
+
+		if data.Results[1].Done || data.Results[2].Done {
+			t.Error("expected other tasks to be incomplete")
 		}
 	})
 }
